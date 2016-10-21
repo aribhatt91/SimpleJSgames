@@ -1,0 +1,222 @@
+<html>
+
+<head>
+	<title>Bricks</title>
+	<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+	<meta content="utf-8" http-equiv="encoding">
+</head>
+
+
+
+<body>
+
+	<canvas id="gameCanvas" width="800" height="600"> 
+	</canvas>
+
+	<script type="text/javascript">
+
+	var canvas, canvasContext;
+	var ballX = 400;
+    var ballSpeedX = 15;
+    var ballY = 550;
+    var ballSpeedY = 15;
+    var box_h = 5;
+    var box_w = 5;
+    var yOffset = 20;
+
+    const paddleY = 550;
+    var paddleX = 350;
+    const BRICK_W = 80;
+    const BRICK_H = 30;
+    const PADDLE_H = 10;
+    const PADDLE_W = 100;
+    var playerScore = 0;
+
+    const ROW = 3;
+    var COL;
+    var arr = new Array();
+
+
+	window.onload = function(){
+		canvas = document.getElementById('gameCanvas');
+		canvasContext = canvas.getContext('2d');
+
+		var fps = 30;
+
+      	setInterval(callBoth, 1000/fps);
+
+      	COL = canvas.width/BRICK_H;
+
+      	for(var i=0; i<ROW; i++){
+
+      		for(var j=0; j<COL; j++){
+
+      			arr[i*COL + j] = true;
+
+      		}
+      	}
+      	
+
+        canvas.addEventListener('mousemove',
+          function(evt){
+
+            var mousePos = calculateMousePos(evt);
+            paddleX = mousePos.x - PADDLE_W/2;
+
+        });
+
+	}
+
+	function calculateMousePos(evt){
+      var rect = canvas.getBoundingClientRect();
+      var root = document.documentElement;
+      var mouseX = evt.clientX - rect.left - root.scrollLeft;
+      var mouseY = evt.clientY - rect.top - root.scrollTop;
+
+      return {
+        x:mouseX,
+        y:mouseY
+      };
+
+    }
+
+    function callBoth(){
+    	drawThings();
+    	moveThings();
+    	drawBricks();
+    }
+
+	function drawThings(){
+
+		colorRect(0,0, canvas.width, canvas.height, 'green');
+		colorRect(paddleX, paddleY, PADDLE_W, PADDLE_H, 'black');
+		colorCircle(ballX, ballY, 'white');
+
+
+	}
+
+	function moveThings(){
+
+		ballX = ballX + ballSpeedX;
+        ballY = ballY + ballSpeedY;
+
+        if(ballY >=paddleY - PADDLE_H && ballX>paddleX && ballX<paddleX+PADDLE_W){
+        	ballSpeedY = -ballSpeedY;
+        	var delX = ballX - (paddleX + PADDLE_W/2);
+          	ballSpeedX = delX * 0.35;
+
+        }
+		else if(ballY>=canvas.height){
+			ballSpeedY = -ballSpeedY;
+			resetBall();
+		}
+
+		if(ballY <= 3*BRICK_H && checkBrick(2)==true){
+			ballSpeedY = -ballSpeedY;
+		}else if (ballY <= 2*BRICK_H && checkBrick(1)==true){
+			ballSpeedY = -ballSpeedY;
+		}else if (ballY <= BRICK_H && checkBrick(0)==true){
+			ballSpeedY = -ballSpeedY;
+		}
+		else if(ballY<=0){
+			ballSpeedY = -ballSpeedY;
+		}
+
+		if(ballX>=canvas.width){
+			ballSpeedX = -ballSpeedX;
+		}
+		if(ballX<=0){
+			ballSpeedX = -ballSpeedX;
+		}
+
+	}
+
+	function checkBrick(row){
+
+		var i = Math.floor(ballX/BRICK_W);
+
+		if(arr[row*COL + i]){
+			arr[row*COL + i] = false;
+			playerScore++;
+			return true;
+		}
+		return false;
+
+
+	}
+
+	function resetBall(){
+		ballX = paddleX + PADDLE_W/2;
+		ballY = 550;
+		playerScore--;
+	}
+
+	function resetCanvas(){
+
+		for(var i=0; i<ROW; i++){
+
+      		for(var j=0; j<COL; j++){
+
+      			arr[i*COL + j] = true;
+
+      		}
+      	}
+      	paddleX = canvas.width/2 - PADDLE_W/2;
+
+      	resetBall();
+
+	}
+
+	function drawBricks(){
+		/*
+		for(var i=0; i<rows; i++){
+
+			for(var j=0; j<8; j++){
+				colorBrick(j*BRICK_W, i*BRICK_H, BRICK_W, BRICK_H);
+			}
+
+		}
+		*/
+		for(var i=0; i<ROW; i++){
+      		for(var j=0; j<COL; j++){
+      			if(arr[i*COL + j]==true){
+      				colorBrick(j*BRICK_W, i*BRICK_H, BRICK_W, BRICK_H);
+      			}
+      		}
+      	}
+	}
+
+	function colorBrick(leftX, topY, width, height){
+		colorRect(leftX, topY, width, height, 'green');
+		colorRect(leftX+2, topY+2, width-4, height-4, 'black');
+	}
+
+	function colorCircle(leftX, topY, col){
+      canvasContext.fillStyle = col;
+      canvasContext.beginPath();
+      canvasContext.arc(leftX, topY, box_w, 0, Math.PI*2, true);
+      canvasContext.fill();
+
+    }
+
+
+
+    function colorRect(leftX, topY, width, height, col){
+
+      canvasContext.fillStyle = col;
+      canvasContext.fillRect(leftX, topY, width, height);
+
+    }
+
+    function writeText(str, leftX, topY, col){
+      canvasContext.font = "30px Verdana";
+      canvasContext.fillStyle = col;
+      canvasContext.fillText(str, leftX, topY);
+    }
+
+	</script>
+
+
+</body>
+
+</html>
